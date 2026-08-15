@@ -119,7 +119,7 @@ export default function AdminClient({ initialVideos }: { initialVideos: Video[] 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       {/* Header bar with Logout */}
       <div className="flex justify-end pb-2">
         <button

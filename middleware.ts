@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(req: NextRequest) {
-  const basicAuth = req.headers.get('authorization')
-  const expectedUser = process.env.AUTH_USERNAME || 'admin'
-  const expectedPass = process.env.AUTH_PASSWORD || 'admin'
+  const authHeader = req.headers.get('authorization')
 
-  if (basicAuth) {
-    const authValue = basicAuth.split(' ')[1]
-    if (authValue) {
-      const [user, pwd] = Buffer.from(authValue, 'base64').toString().split(':')
-      if (user === expectedUser && pwd === expectedPass) {
+  if (authHeader?.startsWith('Basic ')) {
+    try {
+      const base64 = authHeader.substring(6).trim()
+      const decoded = Buffer.from(base64, 'base64').toString('utf-8')
+      const [user, ...rest] = decoded.split(':')
+      const pass = rest.join(':')
+
+      const rawUser = process.env.AUTH_USERNAME || 'admin'
+      const rawPass = process.env.AUTH_PASSWORD || 'admin'
+
+      const expectedUser = rawUser.replace(/^['"]|['"]$/g, '')
+      const expectedPass = rawPass.replace(/^['"]|['"]$/g, '')
+
+      if (user === expectedUser && pass === expectedPass) {
         return NextResponse.next()
       }
-    }
+    } catch {}
   }
 
   return new NextResponse('Authentication Required', {

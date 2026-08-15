@@ -9,23 +9,23 @@ export default async function HomePage() {
 
   if (videos.length === 0) {
     return (
-      <div className="text-center py-24 text-xs text-neutral-400">
+      <div className="text-center py-32 text-xs text-neutral-400">
         No videos published yet.
       </div>
     )
   }
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
       {videos.map((video) => {
         const embedUrl = getYouTubeEmbedUrl(video.youtubeUrl)
 
         return (
           <article
             key={video.id}
-            className="bg-white border border-neutral-200/80 rounded-xl overflow-hidden shadow-2xs space-y-3 p-3 sm:p-4"
+            className="bg-white border border-neutral-200/70 rounded-2xl overflow-hidden shadow-xs hover:border-neutral-300 transition-colors flex flex-col"
           >
-            <div className="aspect-video w-full bg-neutral-900 rounded-lg overflow-hidden">
+            <div className="aspect-video w-full bg-neutral-950 overflow-hidden shrink-0">
               {embedUrl ? (
                 <iframe
                   src={embedUrl}
@@ -35,17 +35,19 @@ export default async function HomePage() {
                   allowFullScreen
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-neutral-500 text-xs">
+                <div className="w-full h-full flex items-center justify-center text-neutral-500 text-xs font-mono">
                   Invalid Video URL
                 </div>
               )}
             </div>
 
-            <div className="space-y-1 px-1">
-              <h2 className="font-semibold text-base sm:text-lg text-neutral-900 leading-snug">
-                {video.title}
-              </h2>
-              <VideoDescription description={video.description} />
+            <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-2">
+              <div className="space-y-1.5">
+                <h2 className="font-semibold text-base sm:text-lg text-neutral-900 leading-snug">
+                  {video.title}
+                </h2>
+                <VideoDescription description={video.description} />
+              </div>
             </div>
           </article>
         )
