@@ -76,3 +76,14 @@ export async function deleteVideo(id: string): Promise<{ success: boolean; error
     return { success: false, error: err.message || 'Failed to delete video' }
   }
 }
+
+export async function saveReorderedVideos(videos: Video[]): Promise<{ success: boolean; error?: string }> {
+  try {
+    await saveVideos(videos)
+    revalidatePath('/')
+    revalidatePath('/admin')
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to reorder videos' }
+  }
+}
