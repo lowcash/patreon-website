@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { createVideo, updateVideo, deleteVideo, saveReorderedVideos } from '@/app/actions/videos'
+import { signOutAction } from '@/app/actions/auth'
 import { Video } from '@/lib/types'
 import { Trash2, Edit3, X, Check, ChevronUp, ChevronDown, LogOut } from 'lucide-react'
 
@@ -21,8 +22,12 @@ export default function AdminClient({ initialVideos }: { initialVideos: Video[] 
   const [editYoutubeUrl, setEditYoutubeUrl] = useState('')
   const [editDescription, setEditDescription] = useState('')
 
-  const handleLogout = () => {
-    window.location.href = '/'
+  const handleLogout = async () => {
+    try {
+      await signOutAction()
+    } finally {
+      window.location.href = '/'
+    }
   }
 
   const handleAdd = async (e: React.FormEvent) => {
