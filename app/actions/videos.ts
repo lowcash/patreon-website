@@ -12,28 +12,30 @@ export async function createVideo(formData: {
   title: string
   description: string
   youtubeUrl: string
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<{ success: boolean; video?: Video; error?: string }> {
   try {
     const { title, description, youtubeUrl } = formData
     if (!title?.trim() || !youtubeUrl?.trim()) {
-      return { success: false, error: 'Title and YouTube URL required' }
+      return { success: false, error: 'Title and YouTube URL are required' }
     }
 
     const videos = await fetchVideos()
-    videos.unshift({
+    const newVideo: Video = {
       id: 'vid_' + Date.now(),
       title: title.trim(),
       description: description?.trim() || '',
       youtubeUrl: youtubeUrl.trim(),
       createdAt: new Date().toISOString(),
-    })
+    }
 
+    videos.unshift(newVideo)
     await saveVideos(videos)
+
     revalidatePath('/')
     revalidatePath('/admin')
-    return { success: true }
+    return { success: true, video: newVideo }
   } catch (err: any) {
-    return { success: false, error: err.message || 'Error saving video' }
+    return { success: false, error: err.message || 'Failed to save video' }
   }
 }
 
@@ -45,7 +47,7 @@ export async function updateVideo(
     const { title, description, youtubeUrl } = formData
     const videos = await fetchVideos()
     const index = videos.findIndex((v) => v.id === id)
-    if (index === -1) return { success: false, error: 'Not found' }
+    if (index === -1) return { success: false, error: 'Video not found' }
 
     videos[index] = {
       ...videos[index],
@@ -59,18 +61,18 @@ export async function updateVideo(
     revalidatePath('/admin')
     return { success: true }
   } catch (err: any) {
-    return { success: false, error: err.message || 'Error updating' }
+    return { success: false, error: err.message || 'Failed to update video' }
   }
 }
 
-export async function deleteVideo(id: string): Promise<{ success: boolean }> {
+export async function deleteVideo(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     const videos = await fetchVideos()
     await saveVideos(videos.filter((v) => v.id !== id))
     revalidatePath('/')
     revalidatePath('/admin')
     return { success: true }
-  } catch {
-    return { success: false }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to delete video' }
   }
 }

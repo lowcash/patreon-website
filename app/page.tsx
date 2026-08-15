@@ -1,5 +1,6 @@
 import { getVideos } from './actions/videos'
 import { getYouTubeEmbedUrl } from '@/lib/youtube'
+import VideoDescription from './components/video-description'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,11 +42,7 @@ export default async function HomePage() {
               <h2 className="font-medium text-base text-neutral-900">
                 {video.title}
               </h2>
-              {video.description && (
-                <p className="text-sm text-neutral-600 whitespace-pre-line leading-relaxed">
-                  {video.description}
-                </p>
-              )}
+              <VideoDescription description={video.description} />
             </div>
           </article>
         )
