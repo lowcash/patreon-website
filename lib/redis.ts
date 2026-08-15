@@ -1,50 +1,33 @@
-import { createClient } from 'redis'
+import { Redis } from '@upstash/redis'
 import { Video } from './types'
 
 const REDIS_KEY = 'videos'
-const redisUrl = process.env.REDIS_URL || process.env.KV_URL
 
-let client: ReturnType<typeof createClient> | null = null
-
-async function getClient() {
-  if (!redisUrl) return null
-
-  if (!client) {
-    try {
-      client = createClient({
-        url: redisUrl,
-        socket: {
-          reconnectStrategy: (retries) => (retries > 2 ? false : 500),
-        },
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
       })
-      client.on('error', () => {})
-      await client.connect()
-    } catch {
-      client = null
-      return null
-    }
-  }
-  return client
-}
+    : null
 
 export async function fetchVideos(): Promise<Video[]> {
   try {
-    const redis = await getClient()
     if (!redis) return []
-    const raw = await redis.get(REDIS_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
+    const data = await redis.get<Video[] | string>(REDIS_KEY)
+    if (!data) return []
+    return typeof data === 'string' ? JSON.parse(data) : data
+  } catch (err) {
+    console.error('Error fetching videos from Upstash Redis:', err)
     return []
   }
 }
 
 export async function saveVideos(videos: Video[]): Promise<void> {
   try {
-    const redis = await getClient()
-    if (redis) {
-      await redis.set(REDIS_KEY, JSON.stringify(videos))
-    }
+    if (!redis) return
+    await redis.set(REDIS_KEY, videos)
   } catch (err) {
-    console.error('Failed to save to Redis:', err)
+    console.error('Error saving videos to Upstash Redis:', err)
   }
 }
